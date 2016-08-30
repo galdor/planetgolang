@@ -1,0 +1,248 @@
+#!/bin/sh
+
+# ----------------------------------------------------------------------------
+#  Misc
+# ----------------------------------------------------------------------------
+pgo_die() {
+    printf "\033[31m$*\033[0m\n" >/dev/stderr
+    exit 1
+}
+
+# ----------------------------------------------------------------------------
+#  Install
+# ----------------------------------------------------------------------------
+pgo_install() {
+    tmpdir=/tmp/planetgolang
+
+    rm -rf $tmpdir
+    mkdir -p $tmpdir
+    trap "rm -rf $tmpdir" EXIT
+
+    # Setup the go directory
+    gopath="$tmpdir/go"
+    mkdir -p "$gopath/src"
+
+    # Install glide
+    echo "installing glide"
+
+    GOPATH=$gopath go get github.com/Masterminds/glide
+    if [ $? -ne 0 ]; then
+        pgo_die "cannot install glide"
+    fi
+
+    glide=$gopath/bin/glide
+
+    # Fetch the repository
+    echo "fetching $repository_path"
+
+    repository_fullpath=$gopath/src/$repository_path
+
+    mkdir -p $repository_fullpath
+    cd $repository_fullpath
+
+    git clone --recurse-submodules $repository_url .
+    if [ $? -ne 0 ]; then
+        pgo_die "cannot clone $repository_url"
+    fi
+
+    if [ -n "$checkout" ]; then
+        git checkout -q $checkout
+        if [ $? -ne 0 ]; then
+            pgo_die "cannot checkout $checkout for $repository_path"
+        fi
+    fi
+
+    # Install dependencies
+    echo "installing dependencies"
+
+    GOPATH=$gopath $glide install
+    if [ $? -ne 0 ]; then
+        pgo_die "cannot install dependencies"
+    fi
+
+    # Build
+    echo "building $repository_name"
+
+    GOPATH=$gopath gmake
+    if [ $? -ne 0 ]; then
+        pgo_die "cannot build $name"
+    fi
+
+    # Install
+    installdir="$tmpdir/install"
+    mkdir -p $installdir
+    mkdir -p $installdir/usr/local
+
+    echo "installing $repository_name to $installdir/usr/local"
+    gmake prefix=$installdir/usr/local install
+    if [ $? -ne 0 ]; then
+        pgo_die "cannot install $name"
+    fi
+
+    # Package version
+    version_file="$repository_fullpath/version"
+    if [ ! -f $version_file ]; then
+        pgo_die "version file not found at $version_file"
+    fi
+    version=$(cat $version_file)
+    buildid=$(cd $repository_fullpath && git describe --always --dirty --long --tags)
+
+    if [ "${buildid##v}" = "$version" ]; then
+        revision=""
+    else
+        revision=$(echo $buildid | cut -d- -f2)
+    fi
+
+    if [ "$(echo ${buildid##v} | cut -d- -f1)" != "$version" ]; then
+        pgo_die "version $version does not match build id $buildid"
+    fi
+
+    if [ -n "$revision" ]; then
+        pkgversion="${version}_${revision}"
+    else
+        pkgversion=$version
+    fi
+
+    # Create package
+    pkgdir="$tmpdir/pkg"
+    mkdir -p $pkgdir
+
+    manifest="$pkgdir/+MANIFEST"
+
+    pgo_manifest_create -o $manifest -v $pkgversion $installdir
+
+    rm -f "/tmp/planetgolang-*.txz"
+    pkg create -m $(dirname $manifest) -r $installdir -o /tmp
+    if [ $? -ne 0 ]; then
+        pgo_die "cannot create package";
+    fi
+
+    pkgname="/tmp/planetgolang-$pkgversion.txz"
+    echo "package created at $pkgname"
+}
+
+pgo_manifest_create() {
+    file="+MANIFEST"
+    version="0.0"
+
+    OPTIND=1
+    while getopts "ho:v:" arg; do
+        case "$arg" in
+            h) pgo_usage; exit 0 ;;
+            o) file=$OPTARG ;;
+            v) version=$OPTARG ;;
+            ?) pgo_die "unknown option" ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ $# -lt 1 ]; then
+        pgo_die "missing argument"
+    fi
+
+    dir=$1
+
+    touch $file
+    cat >>$file <<EOF
+name = "planetgolang"
+origin = "galdor/planetgolang"
+version = "$version"
+comment = "Planet Golang"
+desc = "An aggregator for Go-related blogs"
+www = "http://planetgolang.com"
+maintainer = "khaelin@gmail.com"
+abi = "freebsd:10:amd64"
+arch = "freebsd:10:x86:64"
+users = ["planetgolang"]
+groups = ["planetgolang"]
+prefix = "/usr/local"
+deps {
+    ca_root_nss {origin = "security/ca_root_nss";}
+}
+files {
+EOF
+
+    find $dir -type f | while read f; do
+        checksum=$(sha256 -q "$f")
+
+        name=${f##$dir}
+
+        uname=planetgolang
+        gname=planetgolang
+
+        if [ -x "$f" ]; then
+            perm=0755
+        else
+            perm=0644
+        fi
+
+        cat >>$file <<EOF
+    $name: {sum = "$checksum"; uname = "$uname"; gname = "$gname"; perm = "$perm";}
+EOF
+    done
+
+    cat >>$file <<EOF
+}
+
+scripts {
+    pre-install = <<EOD
+        if ! /usr/sbin/pw groupshow planetgolang >/dev/null 2>&1; then
+            echo "===> Creating group planetgolang"
+            /usr/sbin/pw groupadd planetgolang
+        else
+            echo "===> Using existing group planetgolang"
+        fi
+        
+        if ! /usr/sbin/pw usershow planetgolang >/dev/null 2>&1; then
+            echo "===> Creating user planetgolang"
+            /usr/sbin/pw useradd planetgolang -g planetgolang -c "Planet Golang" -d /home/planetgolang -m -s /bin/sh
+        else
+            echo "===> Using existing user planetgolang"
+        fi
+EOD;
+
+    pre-deinstall = <<EOD
+        if /usr/sbin/pw groupshow planetgolang >/dev/null 2>&1; then
+            echo "===> You should manually remove the planetgolang group"
+        fi
+        
+        if /usr/sbin/pw usershow planetgolang >/dev/null 2>&1; then
+            echo "===> You should manually remove the planetgolang user"
+        fi
+EOD;
+}
+EOF
+}
+
+# ----------------------------------------------------------------------------
+#  Main
+# ----------------------------------------------------------------------------
+repository_path=github.com/galdor/planetgolang
+repository_url=https://${repository_path}.git
+repository_name=planetgolang
+checkout=""
+
+pgo_usage() {
+cat >/dev/stdout <<EOF
+Usage: $0 OPTIONS
+
+OPTIONS
+
+-c <commit>  the commit to checkout
+-h           display help
+EOF
+}
+
+tag="HEAD"
+
+OPTIND=1
+while getopts "c:h" arg; do
+    case "$arg" in
+        c) checkout=$OPTARG ;;
+        h) pgo_usage; exit 0 ;;
+        ?) pgo_die "unknown option" ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+pgo_install
