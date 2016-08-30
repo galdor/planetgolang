@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
 	"github.com/galdor/go-cmdline"
 )
