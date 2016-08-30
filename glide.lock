@@ -1,0 +1,47 @@
+hash: ae57e753945bc54baf006633b5d0742d6c85609b208d6bb548ee53be7ed24d46
+updated: 2016-08-30T15:04:56.363722167+02:00
+imports:
+- name: github.com/andybalholm/cascadia
+  version: 3ad29d1ad1c4f2023e355603324348cf1f4b2d48
+- name: github.com/galdor/go-cmdline
+  version: 13667367d5986f5f39e27ef8f43119e490696511
+- name: github.com/gorilla/feeds
+  version: 441264de03a8117ed530ae8e049d8f601a33a099
+- name: github.com/mattn/go-sqlite3
+  version: 3b3f1d01b2696af5501697c35629048c227586ab
+- name: github.com/mmcdole/gofeed
+  version: 303223474e837398b2f8a265e5572958bb5568c0
+  subpackages:
+  - atom
+  - extensions
+  - internal/shared
+  - rss
+- name: github.com/mmcdole/goxpp
+  version: e38884aa48c1952a416ba35f3c276e4f02f9b40e
+- name: github.com/PuerkitoBio/goquery
+  version: 56a198aba89cdf7a612e6c762eff9d788b9f2dae
+- name: golang.org/x/net
+  version: 6250b412798208e6c90b03b7c4f226de5aa299e2
+  subpackages:
+  - html
+  - html/atom
+  - html/charset
+- name: golang.org/x/text
+  version: d69c40b4be55797923cec7457fac7a244d91a9b6
+  subpackages:
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - internal/tag
+  - internal/utf8internal
+  - language
+  - runes
+  - transform
+testImports: []
