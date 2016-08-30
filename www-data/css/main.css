@@ -1,0 +1,76 @@
+
+body {
+    font-family: sans-serif;
+}
+
+code, kbd, pre, samp {
+    font-family: monospace;
+    color: #333333;
+}
+
+article {
+    background-color: #eeeeee;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    margin-top: 2em;
+    padding: 0em 0.5em 1em 0.5em;
+}
+
+article h1 {
+    font-size: 160%;
+}
+
+/* Main navbar */
+nav.main {
+    background-image: none;
+    background-color: #eeeeee;
+    box-shadow: none;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    margin-top: 1em;
+}
+
+nav.main a.navbar-brand {
+    color: #333333;
+}
+
+/* Footer */
+footer {
+    margin: 2em 0 1em 0;
+    text-align: center;
+    font-size: 80%;
+}
+
+/* Posts */
+article.post .title {
+    font-variant: small-caps;
+}
+
+article.post .date {
+    font-size: 120%;
+    color: #707070;
+}
+
+article.post .content {
+    margin-top: 1em;
+}
+
+nav.pages {
+    margin-top: 3em;
+    text-align: center;
+}
+
+/* Feeds */
+article.feeds ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+article.feeds a.title {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+article.feeds a.feed img {
+    vertical-align: middle;
+}

@@ -1,0 +1,23 @@
+{{define "feeds"}}
+
+{{template "header" .}}
+
+<article class="feeds">
+<h1>Feeds</h1>
+
+<ul>
+  {{range .Feeds}}
+    <li>
+      <a class="feed" href="{{.Feed.URL}}">
+        <img src="/img/feed-icon-14x14.png"></img>
+      </a>
+
+      <a class="title" href="{{.Feed.WebsiteURL}}">{{.FeedTitle}}</a>
+    </li>
+  {{end}}
+</ul>
+</article>
+
+{{template "footer" .}}
+
+{{end}}

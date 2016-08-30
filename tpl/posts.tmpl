@@ -1,0 +1,67 @@
+{{define "posts"}}
+
+{{template "header" .}}
+
+<section class="posts">
+  {{range .Posts}}
+    <article class="post">
+      <div class="title">
+        <h1>
+          <a href="{{.Feed.WebsiteURL}}" title="feed {{.Feed.Id}}">{{.PostAuthor}}</a>
+          —
+          <a href="{{.Post.URL}}" title="post {{.Post.Id}}">{{.Post.Title}}</a>
+        </h1>
+      </div>
+
+      <div class="date">
+        {{.Post.Date.UTC.Format "2006-01-02"}} ({{.PostAgeString}})
+      </div>
+
+      <div class="text-justify content">
+        {{.PostContent}}
+      </div>
+    </article>
+  {{end}}
+</section>
+
+<nav class="pages">
+  <ul class="pagination">
+    {{if gt .Page 1}}
+    <li class="page-item">
+      <a class="page-link" href="page-00001.html">
+        <span>&laquo;</span>
+        <span class="sr-only">First</span>
+      </a>
+    </li>
+
+    <li class="page-item">
+      <a class="page-link" href="{{printf "page-%05d.html" .PreviousPage}}">{{.PreviousPage}}</a>
+    </li>
+    {{end}}
+
+    <li class="page-item active">
+      <a class="page-link" href="{{printf "page-%05d.html" .Page}}">{{.Page}}</a>
+    </li>
+
+    {{if lt .Page .LastPage}}
+    <li class="page-item">
+      <a class="page-link" href="{{printf "page-%05d.html" .NextPage}}">{{.NextPage}}</a>
+    </li>
+
+    <li class="page-item">
+      <a class="page-link" href="{{printf "page-%05d.html" .LastPage}}">
+        <span>&raquo;</span>
+        <span class="sr-only">Last</span>
+      </a>
+    </li>
+    {{end}}
+  </ul>
+</nav>
+
+<footer>
+  Last update: {{.LastUpdate.Format "2006-01-02 15:04:05Z07:00"}}
+</footer>
+
+{{template "footer" .}}
+
+{{end}}

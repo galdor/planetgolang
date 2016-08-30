@@ -1,0 +1,31 @@
+{{define "about"}}
+
+{{template "header" .}}
+
+<article class="about">
+  <h1>About</h1>
+
+  <p>
+  Planet Golang is an aggregator which collects the posts of various
+  go-related blogs. The website is statically generated using my own
+  <a href="https://github.com/galdor/planetgolang">github.com/galdor/planetgolang</a>
+  package.
+  </p>
+
+  <p>
+  To add your own blog to the list, please contact me. I will need a RSS or
+  Atom feed which includes entire articles.
+  </p>
+
+  <p>
+  If you have any questions or comments about Planet Golang, just
+  <a href="mailto:contact@planetgolang.com">send me an email</a>.
+  </p>
+
+  <h1>Feed</h1>
+  An RSS feed containing the last posts is <a href="/rss.xml">available</a>.
+</article>
+
+{{template "footer" .}}
+
+{{end}}
