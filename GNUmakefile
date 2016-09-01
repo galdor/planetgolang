@@ -26,7 +26,7 @@ build:
 deploy:
 	@if [ -z "$(pkg)" ]; then echo "missing pkg"; exit 1; fi
 	@scp -q $(pkg) $(host):/tmp
-	@ssh root@$(host) pkg install -q /tmp/$(notdir $(pkg))
+	@ssh root@$(host) pkg install -q -y /tmp/$(notdir $(pkg))
 
 install:
 	mkdir -p $(bindir)
