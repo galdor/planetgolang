@@ -3,10 +3,11 @@ gopkg= github.com/galdor/planetgolang
 bin= planetgolang
 build_id=$(shell git describe --always --dirty --long --tags)
 
-prefix= /usr/local
+installdir=
+prefix= $(installdir)/usr/local
 bindir= $(prefix)/bin
-dbdir= /var/db/planetgolang
 sharedir= $(prefix)/share/planetgolang
+dbdir= $(installdir)/var/db/planetgolang
 
 host= hades.snowsyn.net
 
