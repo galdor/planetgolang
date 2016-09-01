@@ -30,6 +30,7 @@ import (
 
 type Generator struct {
 	WWWDataPath  string
+	TplPath      string
 	DirPath      string
 	PostsPerPage int
 	AnalyticsId  string
@@ -147,11 +148,22 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 	}
 
 	// Load templates
-	g.tpl = template.Must(template.ParseFiles(
-		"tpl/main.tmpl",
-		"tpl/feeds.tmpl",
-		"tpl/about.tmpl",
-		"tpl/posts.tmpl"))
+	tplPaths := []string{
+		"main.tmpl",
+		"feeds.tmpl",
+		"about.tmpl",
+		"posts.tmpl",
+	}
+
+	for i, p := range tplPaths {
+		tplPaths[i] = path.Join(g.TplPath, p)
+	}
+
+	tpl, err := template.ParseFiles(tplPaths...)
+	if err != nil {
+		return fmt.Errorf("cannot load templates: %v", err)
+	}
+	g.tpl = tpl
 
 	// Generate the feed page
 	sort.Sort(fl)

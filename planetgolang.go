@@ -181,6 +181,9 @@ func CLICmdGenerate(args []string, db *DB) {
 	cmdline.AddOption("", "www-data", "path",
 		"the directory containing web-related files")
 	cmdline.SetOptionDefault("www-data", "./www-data")
+	cmdline.AddOption("", "tpl", "path",
+		"the directory containing template files")
+	cmdline.SetOptionDefault("tpl", "./tpl")
 
 	cmdline.AddArgument("output", "the output directory")
 
@@ -193,6 +196,7 @@ func CLICmdGenerate(args []string, db *DB) {
 	gen := NewGenerator()
 	gen.AnalyticsId = cmdline.OptionValue("analytics-id")
 	gen.WWWDataPath = cmdline.OptionValue("www-data")
+	gen.TplPath = cmdline.OptionValue("tpl")
 	gen.DirPath = dirPath
 
 	err := db.WithTx(func(tx *sql.Tx) error {
