@@ -28,6 +28,7 @@ import (
 )
 
 type Generator struct {
+	Production    bool
 	ShareDirPath  string
 	OutputDirPath string
 	PostsPerPage  int
@@ -37,6 +38,7 @@ type Generator struct {
 }
 
 type GeneratorData struct {
+	Production  bool
 	AnalyticsId string
 }
 
@@ -46,6 +48,7 @@ type GeneratorFeedData struct {
 }
 
 type GeneratorFeedsData struct {
+	Production  bool
 	AnalyticsId string
 
 	Feeds []*GeneratorFeedData
@@ -60,6 +63,7 @@ type GeneratorPostData struct {
 }
 
 type GeneratorPostsData struct {
+	Production  bool
 	AnalyticsId string
 
 	Feeds map[int64]*Feed
@@ -164,6 +168,7 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 	sort.Sort(fl)
 
 	feedsData := &GeneratorFeedsData{
+		Production:  Production,
 		AnalyticsId: g.AnalyticsId,
 		Feeds:       make([]*GeneratorFeedData, len(fl)),
 	}
@@ -181,6 +186,7 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 
 	// Generate the about page
 	aboutData := &GeneratorData{
+		Production:  Production,
 		AnalyticsId: g.AnalyticsId,
 	}
 
@@ -224,6 +230,7 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 		}
 
 		data := GeneratorPostsData{
+			Production:  Production,
 			AnalyticsId: g.AnalyticsId,
 
 			Posts: postsData,

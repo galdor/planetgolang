@@ -9,8 +9,14 @@
 
     <title>Planet Golang</title>
 
+    {{if .Production}}
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    {{else}}
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/bootstrap-theme.css" rel="stylesheet">
+    {{end}}
+
     <link href="css/main.css" rel="stylesheet">
 
     <link href="rss.xml" rel="alternate" type="application/rss+xml">
@@ -47,8 +53,13 @@
 {{define "footer"}}
     </div>
 
+    {{if .Production}}
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    {{else}}
     <script src="js/jquery.js"></script>
     <script src="js/bootstrap.js"></script>
+    {{end}}
   </body>
 </html>
 {{end}}
