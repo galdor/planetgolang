@@ -104,9 +104,9 @@ func (p *Post) ReadFromGofeedItem(item *gofeed.Item) {
 	p.URL = item.Link
 
 	if item.PublishedParsed != nil {
-		p.Date = *item.PublishedParsed
+		p.Date = item.PublishedParsed.UTC()
 	} else if item.UpdatedParsed != nil {
-		p.Date = *item.UpdatedParsed
+		p.Date = item.UpdatedParsed.UTC()
 	}
 
 	p.Title = item.Title
@@ -131,7 +131,7 @@ func (p *Post) ReadFromRow(row *sql.Rows) error {
 		return err
 	}
 
-	p.Date = time.Unix(date, 0)
+	p.Date = time.Unix(date, 0).UTC()
 
 	return nil
 }
