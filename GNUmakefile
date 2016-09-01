@@ -28,7 +28,7 @@ deploy:
 	@scp -q $(pkg) $(host):/tmp
 	@ssh root@$(host) pkg install -q /tmp/$(notdir $(pkg))
 
-install: all
+install:
 	mkdir -p $(bindir)
 	install -m 755 $(bin) $(bindir)
 	mkdir -p $(sharedir)/www-data
