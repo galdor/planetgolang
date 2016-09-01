@@ -149,17 +149,18 @@ func CLICmdUpdate(args []string, db *DB) {
 			continue
 		}
 
-		newPosts := feed.ExtractPosts()
-		oldNbPosts := len(posts)
-		posts.Merge(newPosts)
+		extractedPosts := feed.ExtractPosts()
+		newPosts, updatedPosts := posts.Diff(extractedPosts)
 
 		// Update posts
 		err = db.WithTx(func(tx *sql.Tx) error {
-			if err := posts.DeleteByFeed(tx, feed.Id); err != nil {
-				return err
+			for _, post := range updatedPosts {
+				if err := post.Update(tx); err != nil {
+					return err
+				}
 			}
 
-			for _, post := range posts {
+			for _, post := range newPosts {
 				if err := post.Insert(tx); err != nil {
 					return err
 				}
@@ -172,7 +173,8 @@ func CLICmdUpdate(args []string, db *DB) {
 			continue
 		}
 
-		log.Printf("%d new posts", len(posts)-oldNbPosts)
+		log.Printf("%s: %d new posts, %d updated posts",
+			feed.URL, len(newPosts), len(updatedPosts))
 	}
 }
 

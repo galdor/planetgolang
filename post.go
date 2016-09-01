@@ -97,6 +97,34 @@ func (p *Post) Insert(tx *sql.Tx) error {
 	return nil
 }
 
+func (p *Post) Update(tx *sql.Tx) error {
+	var date int64
+	if p.Date.IsZero() {
+		date = 0
+	} else {
+		date = p.Date.UTC().Unix()
+	}
+
+	_, err := tx.Exec(
+		`UPDATE posts SET
+		     guid = ?,
+		     url = ?,
+		     feed = ?,
+		     date = ?,
+		     title = ?,
+		     author = ?,
+		     content = ?,
+		     enabled = ?
+		   WHERE id = ?`,
+		p.GUID, p.URL, p.FeedId, date, p.Title, p.Author,
+		p.Content, p.Enabled, p.Id)
+	if err != nil {
+		return fmt.Errorf("cannot update post: %v", err)
+	}
+
+	return nil
+}
+
 func (p *Post) ReadFromGofeedItem(item *gofeed.Item) {
 	p.GUID = item.GUID
 	p.URL = item.Link
@@ -200,28 +228,44 @@ func (pl *PostList) DeleteByFeed(tx *sql.Tx, feedId int64) error {
 	return nil
 }
 
-func (pl *PostList) Merge(newPosts PostList) {
+func (pl *PostList) Diff(newPosts PostList) (PostList, PostList) {
 	table := make(map[string]*Post)
 	for _, p := range *pl {
 		table[p.Key()] = p
 	}
 
+	var new, updated PostList
+
 	for _, newPost := range newPosts {
 		p, found := table[newPost.Key()]
 		if !found {
 			// Add new post
-			*pl = append(*pl, newPost)
+			new = append(new, newPost)
 			continue
 		}
 
 		// Update existing post
+		diff := false
+		diff = diff || (p.GUID != newPost.GUID)
+		diff = diff || (p.URL != newPost.URL)
+		diff = diff || (p.Date != newPost.Date)
+		diff = diff || (p.Title != newPost.Title)
+		diff = diff || (p.Author != newPost.Author)
+		diff = diff || (p.Content != newPost.Content)
+
 		p.GUID = newPost.GUID
 		p.URL = newPost.URL
 		p.Date = newPost.Date
 		p.Title = newPost.Title
 		p.Author = newPost.Author
 		p.Content = newPost.Content
+
+		if diff {
+			updated = append(updated, p)
+		}
 	}
+
+	return new, updated
 }
 
 func CountPosts(tx *sql.Tx) (int, error) {
