@@ -44,32 +44,6 @@ func (p *Post) Key() string {
 	return p.URL
 }
 
-func (p *Post) AgeString() string {
-	age := time.Since(p.Date)
-
-	hours := age.Hours()
-	minutes := age.Hours()
-	seconds := age.Hours()
-
-	years := hours / (24.0 * 365.0)
-	months := hours / (24.0 * 30.0)
-	days := hours / 24.0
-
-	if years >= 2.0 {
-		return fmt.Sprintf("%d years ago", int(years))
-	} else if months >= 2.0 {
-		return fmt.Sprintf("%d months ago", int(months))
-	} else if days >= 2.0 {
-		return fmt.Sprintf("%d days ago", int(days))
-	} else if hours >= 2.0 {
-		return fmt.Sprintf("%d hours ago", int(hours))
-	} else if minutes >= 2.0 {
-		return fmt.Sprintf("%d minutes ago", int(minutes))
-	} else {
-		return fmt.Sprintf("%d seconds ago", int(seconds))
-	}
-}
-
 func (p *Post) Insert(tx *sql.Tx) error {
 	var date int64
 	if p.Date.IsZero() {

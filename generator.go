@@ -54,10 +54,9 @@ type GeneratorFeedsData struct {
 type GeneratorPostData struct {
 	Feed *Feed
 
-	Post          *Post
-	PostAuthor    template.HTML
-	PostAgeString string
-	PostContent   template.HTML
+	Post        *Post
+	PostAuthor  template.HTML
+	PostContent template.HTML
 }
 
 type GeneratorPostsData struct {
@@ -218,10 +217,9 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 			postsData[i] = GeneratorPostData{
 				Feed: feed,
 
-				Post:          post,
-				PostAuthor:    template.HTML(author),
-				PostAgeString: post.AgeString(),
-				PostContent:   template.HTML(post.Content),
+				Post:        post,
+				PostAuthor:  template.HTML(author),
+				PostContent: template.HTML(post.Content),
 			}
 		}
 
