@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 )
 
 func CopyFile(ipath, opath string) error {
@@ -36,6 +37,33 @@ func CopyFile(ipath, opath string) error {
 	_, err = io.Copy(w, r)
 	if err != nil {
 		return fmt.Errorf("cannot copy %s to %s: %v", ipath, opath, err)
+	}
+
+	return nil
+}
+
+func ClearDirectory(dirPath string) error {
+	file, err := os.Open(dirPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for {
+		names, err := file.Readdirnames(100)
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return fmt.Errorf("cannot list %s: %v", dirPath, err)
+		}
+
+		for _, name := range names {
+			filePath := path.Join(dirPath, name)
+			if err := os.RemoveAll(filePath); err != nil {
+				return fmt.Errorf("cannot remove %s: %v",
+					filePath, err)
+			}
+		}
 	}
 
 	return nil

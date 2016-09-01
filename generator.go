@@ -22,7 +22,6 @@ import (
 	"os"
 	"path"
 	"sort"
-	"syscall"
 	"time"
 
 	"github.com/gorilla/feeds"
@@ -85,13 +84,13 @@ func NewGenerator() *Generator {
 
 func (g *Generator) Generate(tx *sql.Tx) error {
 	// Prepare the output directory
-	if err := os.RemoveAll(g.OutputDirPath); err != nil {
-		return fmt.Errorf("cannot delete %s: %v", g.OutputDirPath, err)
-	}
-
 	if err := os.MkdirAll(g.OutputDirPath, 0755); err != nil {
 		return fmt.Errorf("cannot create directory %s: %v",
 			g.OutputDirPath, err)
+	}
+
+	if err := ClearDirectory(g.OutputDirPath); err != nil {
+		return fmt.Errorf("cannot clear %s: %v", g.OutputDirPath, err)
 	}
 
 	subDirNames := []string{"js", "css", "img", "fonts"}
@@ -106,22 +105,19 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 
 	// Copy static files
 	for _, subDirName := range subDirNames {
-		srcOutputDirPath := path.Join(g.ShareDirPath, "www-data",
-			subDirName)
-		files, err := ioutil.ReadDir(srcOutputDirPath)
+		srcDirPath := path.Join(g.ShareDirPath, "www-data", subDirName)
+		files, err := ioutil.ReadDir(srcDirPath)
 		if err != nil {
-			if terr, ok := err.(*os.PathError); ok {
-				if terr.Err == syscall.ENOENT {
-					continue
-				}
+			if os.IsNotExist(err) {
+				continue
 			}
 
 			return fmt.Errorf("cannot list directory %s",
-				srcOutputDirPath)
+				srcDirPath)
 		}
 
 		for _, file := range files {
-			ipath := path.Join(srcOutputDirPath, file.Name())
+			ipath := path.Join(srcDirPath, file.Name())
 			opath := path.Join(g.OutputDirPath, subDirName, file.Name())
 
 			if err := CopyFile(ipath, opath); err != nil {
