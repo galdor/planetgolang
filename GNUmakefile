@@ -18,15 +18,15 @@ clean:
 	$(RM) build.go
 
 build:
-	@scp -q deployment/build $(host):/tmp/planetgolang-build
-	@ssh $(host) sh /tmp/planetgolang-build
-	@ssh $(host) rm /tmp/planetgolang-build
-	@scp -q '$(host):/tmp/planetgolang-*.txz' pkgs/
+	scp -q deployment/build $(host):/tmp/planetgolang-build
+	ssh $(host) sh /tmp/planetgolang-build
+	ssh $(host) rm /tmp/planetgolang-build
+	scp -q '$(host):/tmp/planetgolang-*.txz' pkgs/
 
 deploy:
-	@if [ -z "$(pkg)" ]; then echo "missing pkg"; exit 1; fi
-	@scp -q $(pkg) $(host):/tmp
-	@ssh root@$(host) pkg install -q -y /tmp/$(notdir $(pkg))
+	if [ -z "$(pkg)" ]; then echo "missing pkg"; exit 1; fi
+	scp -q $(pkg) $(host):/tmp
+	ssh root@$(host) pkg install -q -y /tmp/$(notdir $(pkg))
 
 install:
 	mkdir -p $(bindir)
