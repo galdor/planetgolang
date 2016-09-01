@@ -63,7 +63,7 @@ pgo_install() {
     # Build
     echo "building $repository_name"
 
-    GOPATH=$gopath gmake
+    GOPATH=$gopath gmake production=1
     if [ $? -ne 0 ]; then
         pgo_die "cannot build $name"
     fi
@@ -74,7 +74,7 @@ pgo_install() {
     mkdir -p $installdir/usr/local
 
     echo "installing $repository_name to $installdir/usr/local"
-    gmake installdir=$installdir install
+    gmake production=1 installdir=$installdir install
     if [ $? -ne 0 ]; then
         pgo_die "cannot install $name"
     fi
