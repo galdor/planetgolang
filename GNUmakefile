@@ -35,6 +35,7 @@ install:
 	cp -r www-data/* $(sharedir)/www-data
 	mkdir -p $(sharedir)/db
 	cp -r db/* $(sharedir)/db
+	mkdir -p $(dbdir)
 
 uninstall:
 	$(RM) $(bindir)/$(bin)
