@@ -19,17 +19,21 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 
 	"github.com/galdor/go-cmdline"
 )
-
-const DefaultDbPath = DbDir + "/planetgolang.db"
 
 func main() {
 	cmdline := cmdline.New()
 
 	cmdline.AddOption("d", "db", "file", "load a sqlite database")
-	cmdline.SetOptionDefault("db", DefaultDbPath)
+	if Production {
+		cmdline.SetOptionDefault("db",
+			path.Join(DbDir, "/planetgolang.db"))
+	} else {
+		cmdline.SetOptionDefault("db", "./planetgolang.db")
+	}
 
 	cmdline.AddCommand("help", "print help and exit")
 	cmdline.AddCommand("add-feed", "add a new feed")
@@ -178,26 +182,26 @@ func CLICmdGenerate(args []string, db *DB) {
 
 	cmdline.AddOption("", "analytics-id", "id",
 		"the google analytics identifier")
-	cmdline.AddOption("", "www-data", "path",
-		"the directory containing web-related files")
-	cmdline.SetOptionDefault("www-data", "./www-data")
-	cmdline.AddOption("", "tpl", "path",
-		"the directory containing template files")
-	cmdline.SetOptionDefault("tpl", "./tpl")
+	cmdline.AddOption("", "share-dir", "path",
+		"the directory containing data files")
+	if Production {
+		cmdline.SetOptionDefault("share-dir", ShareDir)
+	} else {
+		cmdline.SetOptionDefault("share-dir", ".")
+	}
 
 	cmdline.AddArgument("output", "the output directory")
 
 	cmdline.Parse(args)
 
 	// Generate the website
-	dirPath := cmdline.ArgumentValue("output")
-	log.Printf("generating website in %s", dirPath)
+	outputDirPath := cmdline.ArgumentValue("output")
+	log.Printf("generating website in %s", outputDirPath)
 
 	gen := NewGenerator()
 	gen.AnalyticsId = cmdline.OptionValue("analytics-id")
-	gen.WWWDataPath = cmdline.OptionValue("www-data")
-	gen.TplPath = cmdline.OptionValue("tpl")
-	gen.DirPath = dirPath
+	gen.ShareDirPath = cmdline.OptionValue("share-dir")
+	gen.OutputDirPath = outputDirPath
 
 	err := db.WithTx(func(tx *sql.Tx) error {
 		return gen.Generate(tx)

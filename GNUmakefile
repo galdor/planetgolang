@@ -9,6 +9,13 @@ bindir= $(prefix)/bin
 sharedir= $(prefix)/share/planetgolang
 dbdir= $(installdir)/var/db/planetgolang
 
+production=0
+ifeq ($(production), 1)
+	production_bool=true
+else
+	production_bool=false
+endif
+
 host= hades.snowsyn.net
 
 all: build.go
@@ -34,6 +41,8 @@ install:
 	install -m 755 $(bin) $(bindir)
 	mkdir -p $(sharedir)/www-data
 	cp -r www-data/* $(sharedir)/www-data
+	mkdir -p $(sharedir)/templates
+	cp -r templates/* $(sharedir)/templates
 	mkdir -p $(sharedir)/db
 	cp -r db/* $(sharedir)/db
 	mkdir -p $(dbdir)
@@ -42,13 +51,14 @@ uninstall:
 	$(RM) $(bindir)/$(bin)
 	$(RM) -r $(sharedir)
 
-FORCE:
-build.go: GNUmakefile
+build.go:
 	echo 'package main'                                  >$@
 	echo 'const ('                                      >>$@
 	echo '    BuildId string  = "$(build_id)"'          >>$@
+	echo '    Production bool  = $(production_bool)'    >>$@
 	echo '    DbDir string  = "$(dbdir)"'               >>$@
+	echo '    ShareDir string  = "$(sharedir)"'         >>$@
 	echo ')'                                            >>$@
 	gofmt -w $@
 
-.PHONY: all build clean deploy install uninstall
+.PHONY: all build build.go clean deploy install uninstall

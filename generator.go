@@ -29,11 +29,10 @@ import (
 )
 
 type Generator struct {
-	WWWDataPath  string
-	TplPath      string
-	DirPath      string
-	PostsPerPage int
-	AnalyticsId  string
+	ShareDirPath  string
+	OutputDirPath string
+	PostsPerPage  int
+	AnalyticsId   string
 
 	tpl *template.Template
 }
@@ -79,36 +78,37 @@ type GeneratorPostsData struct {
 
 func NewGenerator() *Generator {
 	return &Generator{
-		DirPath:      "/tmp/planetgolang",
-		PostsPerPage: 10,
+		OutputDirPath: "/tmp/planetgolang",
+		PostsPerPage:  10,
 	}
 }
 
 func (g *Generator) Generate(tx *sql.Tx) error {
 	// Prepare the output directory
-	if err := os.RemoveAll(g.DirPath); err != nil {
-		return fmt.Errorf("cannot delete %s: %v", g.DirPath, err)
+	if err := os.RemoveAll(g.OutputDirPath); err != nil {
+		return fmt.Errorf("cannot delete %s: %v", g.OutputDirPath, err)
 	}
 
-	if err := os.MkdirAll(g.DirPath, 0755); err != nil {
+	if err := os.MkdirAll(g.OutputDirPath, 0755); err != nil {
 		return fmt.Errorf("cannot create directory %s: %v",
-			g.DirPath, err)
+			g.OutputDirPath, err)
 	}
 
 	subDirNames := []string{"js", "css", "img", "fonts"}
 	for _, name := range subDirNames {
-		subDirPath := path.Join(g.DirPath, name)
+		subOutputDirPath := path.Join(g.OutputDirPath, name)
 
-		if err := os.MkdirAll(subDirPath, 0755); err != nil {
+		if err := os.MkdirAll(subOutputDirPath, 0755); err != nil {
 			return fmt.Errorf("cannot create directory %s: %v",
-				subDirPath, err)
+				subOutputDirPath, err)
 		}
 	}
 
 	// Copy static files
 	for _, subDirName := range subDirNames {
-		srcDirPath := path.Join(g.WWWDataPath, subDirName)
-		files, err := ioutil.ReadDir(srcDirPath)
+		srcOutputDirPath := path.Join(g.ShareDirPath, "www-data",
+			subDirName)
+		files, err := ioutil.ReadDir(srcOutputDirPath)
 		if err != nil {
 			if terr, ok := err.(*os.PathError); ok {
 				if terr.Err == syscall.ENOENT {
@@ -117,12 +117,12 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 			}
 
 			return fmt.Errorf("cannot list directory %s",
-				srcDirPath)
+				srcOutputDirPath)
 		}
 
 		for _, file := range files {
-			ipath := path.Join(srcDirPath, file.Name())
-			opath := path.Join(g.DirPath, subDirName, file.Name())
+			ipath := path.Join(srcOutputDirPath, file.Name())
+			opath := path.Join(g.OutputDirPath, subDirName, file.Name())
 
 			if err := CopyFile(ipath, opath); err != nil {
 				return err
@@ -156,7 +156,7 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 	}
 
 	for i, p := range tplPaths {
-		tplPaths[i] = path.Join(g.TplPath, p)
+		tplPaths[i] = path.Join(g.ShareDirPath, "templates", p)
 	}
 
 	tpl, err := template.ParseFiles(tplPaths...)
@@ -252,7 +252,7 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 	}
 
 	// Link index.html to the first post page
-	indexPage := path.Join(g.DirPath, "index.html")
+	indexPage := path.Join(g.OutputDirPath, "index.html")
 	firstPostsPage := "page-00001.html"
 
 	if err := os.Symlink(firstPostsPage, indexPage); err != nil {
@@ -269,7 +269,7 @@ func (g *Generator) Generate(tx *sql.Tx) error {
 }
 
 func (g *Generator) GeneratePage(filePath string, tplName string, data interface{}) error {
-	filePath = path.Join(g.DirPath, filePath)
+	filePath = path.Join(g.OutputDirPath, filePath)
 
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -323,7 +323,7 @@ func (g *Generator) GenerateFeed(tx *sql.Tx, filePath string) error {
 	}
 
 	// Write it
-	filePath = path.Join(g.DirPath, filePath)
+	filePath = path.Join(g.OutputDirPath, filePath)
 	if err := ioutil.WriteFile(filePath, []byte(rss), 0644); err != nil {
 		return fmt.Errorf("cannot write %s: %v", filePath, err)
 	}
