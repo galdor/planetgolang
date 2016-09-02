@@ -2,3 +2,4 @@ session.vim
 
 /build.go
 /planetgolang
+/vendor
