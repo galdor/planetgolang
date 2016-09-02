@@ -111,7 +111,7 @@ pgo_install() {
 
     pgo_manifest_create -o $manifest -v $pkgversion $installdir
 
-    rm -f "/tmp/planetgolang-*.txz"
+    rm -f /tmp/planetgolang-*.txz
     pkg create -m $(dirname $manifest) -r $installdir -o /tmp
     if [ $? -ne 0 ]; then
         pgo_die "cannot create package";
