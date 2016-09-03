@@ -57,8 +57,10 @@ pgo_install() {
 
     GOPATH=$gopath $glide install
     if [ $? -ne 0 ]; then
+        rm -rf $HOME/.glide
         pgo_die "cannot install dependencies"
     fi
+    rm -rf $HOME/.glide
 
     # Build
     echo "building $repository_name"
